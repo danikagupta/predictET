@@ -17,7 +17,7 @@ from kats.utils.backtesters import BackTesterSimple
 from kats.models.arima import ARIMAModel, ARIMAParams
 
 
-def mapper(lat, lon, county):
+def mapper(lat, lon, name):
     fig, ax = plt.subplots(figsize=(12, 8))
     map = Basemap(width=240000, height=160000, resolution='c', projection='lcc', lat_0=lat, lon_0=lon)
     map.bluemarble(scale=0.5, alpha=0.3)
@@ -26,7 +26,7 @@ def mapper(lat, lon, county):
 
     x, y = map(lon, lat)
     plt.plot(x, y, 'ok', markersize=3)
-    plt.text(x, y, county, fontsize=24)
+    plt.text(x, y, name, fontsize=24)
     st.pyplot(fig)
 
 
@@ -113,7 +113,7 @@ with st.sidebar:
     (lat, lon) = location_data.loc[location_data["City"] == city_chosen_hyphen, ("Latitude", "Longitude")].iloc[0]
     mapper(lat, lon, city_chosen)
 
-    # Show the raw data in the side-bar
+    # Show the raw data in the sidebar
     download_link = f"https://raw.githubusercontent.com/danikagupta/et_data1/main/{city_chosen_hyphen}.csv"
     etdata = pd.read_csv(download_link)
     etdata.drop(etdata.filter(regex='Unnamed'), axis=1, inplace=True)
@@ -123,8 +123,8 @@ with st.sidebar:
     months_keep = st.slider('Months to use for forecast', 10, months_available, int((10 + months_available) / 2))
     months_more = st.slider('Additional months to forecast', 12, 60, 36)
     months_forecast = months_available - months_keep + months_more
-    trp = int(100 * months_keep / months_available)
-    tep = 100 - trp
+    train_pct = int(100 * months_keep / months_available)
+    test_pct = 100 - train_pct
 
     et_ts_short = et_ts[0:months_keep]
     et_ts_rest = et_ts[months_keep:]
@@ -145,17 +145,13 @@ with st.sidebar:
 
 # setting display mode
 add_background_img(img=image_selected)
-
 if display_mode == 'Two Column':
-    print("Display mode is two column")
     col1, col2 = st.columns(2)
     model1, model2, model3, model4 = col1.container(), col2.container(), col1.container(), col2.container()
 elif display_mode == 'Tabbed':
-    print("Display mode is tabbed")
     tab1, tab2, tab3, tab4 = st.tabs(["Prophet Model", "SARIMA Model", "Theta Model", "ENSEMBLE"])
     model1, model2, model3, model4 = tab1.container(), tab2.container(), tab3.container(), tab4.container()
 else: # display_mode == 'Full Page'
-    print("Display mode is full page")
     model1, model2, model3, model4 = st.container(), st.container(), st.container(), st.container()
 
 with model1:
@@ -171,8 +167,8 @@ with model1:
     fig1 = forecast_plot(fcst1, et_ts_short, et_ts_rest)
     st.markdown(header_format.format(city_chosen, 'Prophet'), unsafe_allow_html=True)
     st.pyplot(fig1)
-    backtester = BackTesterSimple(error_methods=backtest_methods, data=et_ts, params=params, train_percentage=trp,
-                                  test_percentage=tep, model_class=ProphetModel)
+    backtester = BackTesterSimple(error_methods=backtest_methods, data=et_ts, params=params, train_percentage=train_pct,
+                                  test_percentage=test_pct, model_class=ProphetModel)
     backtester.run_backtest()
     display_quality_parameters(backtester.errors)
 
@@ -188,8 +184,8 @@ with model2:
     fig2 = forecast_plot(fcst2, et_ts_short, et_ts_rest)
     st.markdown(header_format.format(city_chosen, 'SARIMA'), unsafe_allow_html=True)
     st.pyplot(fig2)
-    backtester = BackTesterSimple(error_methods=backtest_methods, data=et_ts, params=params, train_percentage=trp,
-                                  test_percentage=tep, model_class=SARIMAModel)
+    backtester = BackTesterSimple(error_methods=backtest_methods, data=et_ts, params=params, train_percentage=train_pct,
+                                  test_percentage=test_pct, model_class=SARIMAModel)
     backtester.run_backtest()
     display_quality_parameters(backtester.errors)
 
@@ -204,8 +200,8 @@ with model3:
     fig3 = forecast_plot(fcst3, et_ts_short, et_ts_rest)
     st.markdown(header_format.format(city_chosen, 'Theta'), unsafe_allow_html=True)
     st.pyplot(fig3)
-    backtester = BackTesterSimple(error_methods=backtest_methods, data=et_ts, params=params, train_percentage=trp,
-                                  test_percentage=tep, model_class=ThetaModel)
+    backtester = BackTesterSimple(error_methods=backtest_methods, data=et_ts, params=params, train_percentage=train_pct,
+                                  test_percentage=test_pct, model_class=ThetaModel)
     backtester.run_backtest()
     display_quality_parameters(backtester.errors)
 
