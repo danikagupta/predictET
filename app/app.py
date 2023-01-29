@@ -17,7 +17,6 @@ from kats.utils.backtesters import BackTesterSimple
 from kats.models.arima import ARIMAModel, ARIMAParams
 
 
-####functions
 def mapper(lat, lon, county):
     fig, ax = plt.subplots(figsize=(12, 8))
     map = Basemap(width=240000, height=160000, resolution='c', projection='lcc', lat_0=lat, lon_0=lon)
@@ -47,8 +46,8 @@ def forecast_plot(fcst, etts, ettr, xlabel='Years', ylabel='ET Index', figsize=(
     return fig
 
 
-def add_background_img(img="https://raw.githubusercontent.com/danikagupta/et_data1/main/img2.png"):
-    if img != "https://raw.githubusercontent.com/danikagupta/et_data1/main/img0.png":
+def add_background_img(img="None"):
+    if img != "None":
         st.markdown(
             f"""
          <style>
@@ -99,16 +98,10 @@ def display_quality_parameters(backtest_errors):
 location_data = pd.read_csv("https://raw.githubusercontent.com/danikagupta/et_data1/main/LocationData.csv")
 cities = location_data["City"].values.tolist()
 cities_no_hyphen = [x.replace("_", " ") for x in cities]
+image_data = pd.read_csv("https://raw.githubusercontent.com/danikagupta/et_data1/main/ImageData.csv")
+background_images=dict(zip(image_data["Name"],image_data["URL"]))
 backtest_methods = ["mape", "smape", "mae", "mase", "mse", "rmse"]
 header_format = '<p style="font-family:Roboto; color:White; font-size: 32px;"> {} with {} </p>'
-background_images = {
-    "None": "https://raw.githubusercontent.com/danikagupta/et_data1/main/img0.png",
-    "Green leaves": "https://raw.githubusercontent.com/danikagupta/et_data1/main/img1.png",
-    "Leaves on water": "https://raw.githubusercontent.com/danikagupta/et_data1/main/img2.png",
-    "Leaves in earth": "https://raw.githubusercontent.com/danikagupta/et_data1/main/img3.png",
-    "More earth, less leaves": "https://raw.githubusercontent.com/danikagupta/et_data1/main/img4.png",
-    "more leaves on earth": "https://raw.githubusercontent.com/danikagupta/et_data1/main/img5.png",
-}
 
 with st.sidebar:
     display_mode = st.select_slider('Display Mode', options=['Two Column', 'Tabbed', 'Full Page'])
@@ -184,7 +177,7 @@ with model1:
     display_quality_parameters(backtester.errors)
 
 with model2:
-    # SARIMA Model
+    # SARIMA model
     from kats.models.sarima import SARIMAModel, SARIMAParams
 
     warnings.simplefilter(action='ignore')
