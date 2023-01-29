@@ -2,7 +2,6 @@ import warnings
 from datetime import datetime, timedelta
 
 import matplotlib.pyplot as plt
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -13,15 +12,7 @@ warnings.filterwarnings('ignore')
 from kats.consts import TimeSeriesData
 from kats.models.ensemble.ensemble import EnsembleParams, BaseModelParams
 from kats.models.ensemble.kats_ensemble import KatsEnsemble
-from kats.models import (
-    # arima,
-    # holtwinters,
-    # linear_model,
-    prophet,  # requires fbprophet be installed
-    # quadratic_model,
-    # sarima,
-    theta,
-)
+from kats.models import prophet, theta
 from kats.utils.backtesters import BackTesterSimple
 from kats.models.arima import ARIMAModel, ARIMAParams
 
@@ -36,11 +27,11 @@ def mapper(lat, lon, county):
 
     x, y = map(lon, lat)
     plt.plot(x, y, 'ok', markersize=3)
-    plt.text(x, y, county, fontsize=18);
+    plt.text(x, y, county, fontsize=24)
     st.pyplot(fig)
 
 
-def forecast_plot(fcst, etts, ettr, plot_cap=True, xlabel='Years', ylabel='ET Index', figsize=(10, 6)):
+def forecast_plot(fcst, etts, ettr, xlabel='Years', ylabel='ET Index', figsize=(10, 6)):
     fig = plt.figure(facecolor='w', figsize=figsize)
     ax = fig.add_subplot(111)
 
@@ -86,7 +77,7 @@ def add_background_color():
     )
 
 
-def aggregateEnsemble(fcst1, fcst2, fcst3):
+def aggregate_ensemble(fcst1, fcst2, fcst3):
     fcst_all_drop = pd.concat(
         [fcst1.reset_index(drop=True), fcst2.reset_index(drop=True), fcst3.reset_index(drop=True)], axis=1, copy=False)
     fcst_df = pd.DataFrame(
@@ -100,17 +91,17 @@ def aggregateEnsemble(fcst1, fcst2, fcst3):
     return fcst_df
 
 
-def displayQualityParams(backtestErrors):
-    df = pd.DataFrame.from_dict(backtestErrors, orient='index', columns=['Value']).transpose()
+def display_quality_parameters(backtest_errors):
+    df = pd.DataFrame.from_dict(backtest_errors, orient='index', columns=['Value']).transpose()
     st.dataframe(df.style.set_precision(2))
 
 
-locationData = pd.read_csv("https://raw.githubusercontent.com/danikagupta/et_data1/main/LocationData.csv")
-cities = locationData["City"].values.tolist()
-citiesNoHyphen = [x.replace("_", " ") for x in cities]
-backtestMethods = ["mape", "smape", "mae", "mase", "mse", "rmse"]
+location_data = pd.read_csv("https://raw.githubusercontent.com/danikagupta/et_data1/main/LocationData.csv")
+cities = location_data["City"].values.tolist()
+cities_no_hyphen = [x.replace("_", " ") for x in cities]
+backtest_methods = ["mape", "smape", "mae", "mase", "mse", "rmse"]
 header_format = '<p style="font-family:Roboto; color:White; font-size: 32px;"> {} with {} </p>'
-backgroundImages = {
+background_images = {
     "None": "https://raw.githubusercontent.com/danikagupta/et_data1/main/img0.png",
     "Green leaves": "https://raw.githubusercontent.com/danikagupta/et_data1/main/img1.png",
     "Leaves on water": "https://raw.githubusercontent.com/danikagupta/et_data1/main/img2.png",
@@ -120,30 +111,30 @@ backgroundImages = {
 }
 
 with st.sidebar:
-    displayMode = st.select_slider('Display Mode', options=['Two Column', 'Tabbed', 'Full Page'])
-    backgroundChosen = st.selectbox("Background", list(backgroundImages.keys()))
-    imageSelected = backgroundImages[backgroundChosen]
+    display_mode = st.select_slider('Display Mode', options=['Two Column', 'Tabbed', 'Full Page'])
+    background_chosen = st.selectbox("Background", list(background_images.keys()))
+    image_selected = background_images[background_chosen]
 
-    cityChosen = st.selectbox("City", citiesNoHyphen)
-    cityChosenHyphen = cityChosen.replace(" ", "_")
-    (lat, lon) = locationData.loc[locationData["City"] == cityChosenHyphen, ("Latitude", "Longitude")].iloc[0]
-    mapper(lat, lon, cityChosen)
+    city_chosen = st.selectbox("City", cities_no_hyphen)
+    city_chosen_hyphen = city_chosen.replace(" ", "_")
+    (lat, lon) = location_data.loc[location_data["City"] == city_chosen_hyphen, ("Latitude", "Longitude")].iloc[0]
+    mapper(lat, lon, city_chosen)
 
     # Show the raw data in the side-bar
-    download_link = f"https://raw.githubusercontent.com/danikagupta/et_data1/main/{cityChosenHyphen}.csv"
+    download_link = f"https://raw.githubusercontent.com/danikagupta/et_data1/main/{city_chosen_hyphen}.csv"
     etdata = pd.read_csv(download_link)
     etdata.drop(etdata.filter(regex='Unnamed'), axis=1, inplace=True)
     etdata.rename(columns={'Ensemble ET': 'ET'}, inplace=True)
     et_ts = TimeSeriesData(time=etdata.DateTime, value=etdata.ET)
-    monthsAvailable = len(et_ts)
-    monthsKeep = st.slider('Months to use for forecast', 10, monthsAvailable, int((10 + monthsAvailable) / 2))
-    monthsMore = st.slider('Additional months to forecast', 12, 60, 36)
-    monthsForecast = monthsAvailable - monthsKeep + monthsMore
-    trp = int(100 * monthsKeep / monthsAvailable)
+    months_available = len(et_ts)
+    months_keep = st.slider('Months to use for forecast', 10, months_available, int((10 + months_available) / 2))
+    months_more = st.slider('Additional months to forecast', 12, 60, 36)
+    months_forecast = months_available - months_keep + months_more
+    trp = int(100 * months_keep / months_available)
     tep = 100 - trp
 
-    et_ts_short = et_ts[0:monthsKeep]
-    et_ts_rest = et_ts[monthsKeep:]
+    et_ts_short = et_ts[0:months_keep]
+    et_ts_rest = et_ts[months_keep:]
 
     # show data as a graph
     df = et_ts.to_dataframe()
@@ -151,7 +142,7 @@ with st.sidebar:
     plt.plot(df['DateTime'], df['ET'])
     plt.xlabel("Year")  # change xaxis label
     plt.ylabel("ET")  # change yaxis label
-    plt.title("Time Series data of {}".format(cityChosen))  # title
+    plt.title("Time Series data of {}".format(city_chosen))  # title
     plt.grid(True)  # emove this to remove the grids in the figure
 
     # show raw data
@@ -160,17 +151,17 @@ with st.sidebar:
         st.dataframe(etdata)
 
 # setting display mode
-add_background_img(img=imageSelected)
+add_background_img(img=image_selected)
 
-if displayMode == 'Two Column':
+if display_mode == 'Two Column':
     print("Display mode is two column")
     col1, col2 = st.columns(2)
     model1, model2, model3, model4 = col1.container(), col2.container(), col1.container(), col2.container()
-if displayMode == 'Tabbed':
+elif display_mode == 'Tabbed':
     print("Display mode is tabbed")
     tab1, tab2, tab3, tab4 = st.tabs(["Prophet Model", "SARIMA Model", "Theta Model", "ENSEMBLE"])
     model1, model2, model3, model4 = tab1.container(), tab2.container(), tab3.container(), tab4.container()
-if displayMode == 'Full Page':
+else: # display_mode == 'Full Page'
     print("Display mode is full page")
     model1, model2, model3, model4 = st.container(), st.container(), st.container(), st.container()
 
@@ -182,15 +173,15 @@ with model1:
     m1 = ProphetModel(et_ts_short, params)
     m1.fit()
     # make prediction for additional month
-    fcst1 = m1.predict(steps=monthsForecast, include_history=True)
+    fcst1 = m1.predict(steps=months_forecast, include_history=True)
     # Plot
     fig1 = forecast_plot(fcst1, et_ts_short, et_ts_rest)
-    st.markdown(header_format.format(cityChosen, 'Prophet'), unsafe_allow_html=True)
+    st.markdown(header_format.format(city_chosen, 'Prophet'), unsafe_allow_html=True)
     st.pyplot(fig1)
-    backtester = BackTesterSimple(error_methods=backtestMethods, data=et_ts, params=params, train_percentage=trp,
+    backtester = BackTesterSimple(error_methods=backtest_methods, data=et_ts, params=params, train_percentage=trp,
                                   test_percentage=tep, model_class=ProphetModel)
     backtester.run_backtest()
-    displayQualityParams(backtester.errors)
+    display_quality_parameters(backtester.errors)
 
 with model2:
     # SARIMA Model
@@ -200,14 +191,14 @@ with model2:
     params = SARIMAParams(p=2, d=1, q=1, trend='ct', seasonal_order=(1, 0, 1, 12))
     m2 = SARIMAModel(data=et_ts_short, params=params)
     m2.fit()
-    fcst2 = m2.predict(steps=monthsForecast, include_history=True)
+    fcst2 = m2.predict(steps=months_forecast, include_history=True)
     fig2 = forecast_plot(fcst2, et_ts_short, et_ts_rest)
-    st.markdown(header_format.format(cityChosen, 'SARIMA'), unsafe_allow_html=True)
+    st.markdown(header_format.format(city_chosen, 'SARIMA'), unsafe_allow_html=True)
     st.pyplot(fig2)
-    backtester = BackTesterSimple(error_methods=backtestMethods, data=et_ts, params=params, train_percentage=trp,
+    backtester = BackTesterSimple(error_methods=backtest_methods, data=et_ts, params=params, train_percentage=trp,
                                   test_percentage=tep, model_class=SARIMAModel)
     backtester.run_backtest()
-    displayQualityParams(backtester.errors)
+    display_quality_parameters(backtester.errors)
 
 with model3:
     # Theta model
@@ -216,18 +207,18 @@ with model3:
     params = ThetaParams(m=12)
     m3 = ThetaModel(data=et_ts_short, params=params)
     m3.fit()
-    fcst3 = m3.predict(steps=monthsForecast, include_history=True, alpha=0.2)
+    fcst3 = m3.predict(steps=months_forecast, include_history=True, alpha=0.2)
     fig3 = forecast_plot(fcst3, et_ts_short, et_ts_rest)
-    st.markdown(header_format.format(cityChosen, 'Theta'), unsafe_allow_html=True)
+    st.markdown(header_format.format(city_chosen, 'Theta'), unsafe_allow_html=True)
     st.pyplot(fig3)
-    backtester = BackTesterSimple(error_methods=backtestMethods, data=et_ts, params=params, train_percentage=trp,
+    backtester = BackTesterSimple(error_methods=backtest_methods, data=et_ts, params=params, train_percentage=trp,
                                   test_percentage=tep, model_class=ThetaModel)
     backtester.run_backtest()
-    displayQualityParams(backtester.errors)
+    display_quality_parameters(backtester.errors)
 
 with model4:
     # ENSEMBLE reusing the work done previously
-    fcst4 = aggregateEnsemble(fcst1, fcst2, fcst3)
+    fcst4 = aggregate_ensemble(fcst1, fcst2, fcst3)
     fig4 = forecast_plot(fcst4, et_ts_short, et_ts_rest)
-    st.markdown(header_format.format(cityChosen, 'ENSEMBLE'), unsafe_allow_html=True)
+    st.markdown(header_format.format(city_chosen, 'ENSEMBLE'), unsafe_allow_html=True)
     st.pyplot(fig4)
