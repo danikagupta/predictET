@@ -1,0 +1,30 @@
+name: Predicting EvapoTranspiration
+description: >-
+  Demonstration of how different time-series algorithms can be used to predict EvapoTranspiration Index
+  to enhance water conservation.
+author: Danika Gupta
+specification_version: 1.0
+prototype_version: 1.0
+date: "2023-01-20"
+
+runtimes:
+  - editor: Workbench
+    kernel: Python 3.9
+    edition: Standard
+
+tasks:
+  - type: run_session
+    name: Install Dependencies
+    script: scripts/install_dependencies.py
+    cpu: 2
+    memory: 4
+
+  - type: start_application
+    short_summary: Starting streamlit application
+    name: Predicting EvapoTranspiration
+    subdomain: tst
+    script: scripts/launch_app.py
+    environment_variables:
+      TASK_TYPE: START_APPLICATION
+    cpu: 2
+    memory: 4
