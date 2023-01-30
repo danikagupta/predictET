@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
-from mpl_toolkits.basemap import Basemap
+import pydeck as pdk
 
 warnings.filterwarnings('ignore')
 
@@ -16,18 +16,11 @@ from kats.models import prophet, theta
 from kats.utils.backtesters import BackTesterSimple
 from kats.models.arima import ARIMAModel, ARIMAParams
 
-
-def mapper(lat, lon, name):
-    fig, ax = plt.subplots(figsize=(12, 8))
-    map = Basemap(width=240000, height=160000, resolution='c', projection='lcc', lat_0=lat, lon_0=lon)
-    map.bluemarble(scale=0.5, alpha=0.3)
-    # map.etopo(scale=0.5, alpha=0.3)
-    map.drawcounties(linewidth=0.5)
-
-    x, y = map(lon, lat)
-    plt.plot(x, y, 'ok', markersize=3)
-    plt.text(x, y, name, fontsize=24)
-    st.pyplot(fig)
+def mapper(lat,lon,name):
+    df = pd.DataFrame({'city':[name],'coordinates':[[lon,lat]]})
+    layer = pdk.Layer("TextLayer", df, get_position="coordinates",get_text="city", get_size=16)
+    view_state = pdk.ViewState(latitude=lat, longitude=lon, zoom=8, bearing=0, pitch=0)
+    st.pydeck_chart(pdk.Deck(map_style='light_no_labels', initial_view_state=view_state, layers=[layer]))
 
 
 def forecast_plot(fcst, etts, ettr, xlabel='Years', ylabel='ET Index', figsize=(10, 6)):
@@ -111,7 +104,6 @@ with st.sidebar:
     city_chosen = st.selectbox("City", cities_no_hyphen)
     city_chosen_hyphen = city_chosen.replace(" ", "_")
     (lat, lon) = location_data.loc[location_data["City"] == city_chosen_hyphen, ("Latitude", "Longitude")].iloc[0]
-    mapper(lat, lon, city_chosen)
 
     # Show the raw data in the sidebar
     download_link = f"https://raw.githubusercontent.com/danikagupta/et_data1/main/{city_chosen_hyphen}.csv"
@@ -138,7 +130,8 @@ with st.sidebar:
     plt.title("Time Series data of {}".format(city_chosen))  # title
     plt.grid(True)  # emove this to remove the grids in the figure
 
-    # show raw data
+    # show city on the map and the raw data
+    mapper(lat, lon, city_chosen)
     with st.expander("Source Data"):
         st.pyplot(fig)
         st.dataframe(etdata)
