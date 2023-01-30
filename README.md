@@ -28,7 +28,7 @@ We display and chart a small dataset with Seaborn.
 We recommend manual setup:
 
 1. In a CML workspace, click "New Project" and add a Project Name. Select "Git" as the Initial Setup option, copy in the repo URL `https://github.com/danikagupta/predictET`, and click "Create Project". 
-2. Launch a Python 3 Workbench Session and run `!pip3 install -r requirements.txt` to install requirements. 
+2. Launch a Python 3 Workbench Session with 4GiB RAM and run `!pip3 install -r requirements.txt` to install requirements. You may need to run this step twice to complete the installation after initial failure.
 3. Then create a CML Application as described in the [CML documentation](https://docs.cloudera.com/machine-learning/1.1/applications/topics/ml-applications.html), using `scripts/launch_app.py` as the script.
 
 ## Launching the app
@@ -67,6 +67,7 @@ The main screen shows the following for each model:
 * A graph showing the input data along with the model predictions for visual analysis.
 * Six quality metrics - in general, the lower the better.
 
+Here are six screenshots:
 ![predict ET App screenshot](static/img2.png)
 ![predict ET App screenshot](static/img3.png)
 ![predict ET App screenshot](static/img4.png)
@@ -74,4 +75,3 @@ The main screen shows the following for each model:
 ![predict ET App screenshot](static/img6.png)
 ![predict ET App screenshot](static/img7.png)
 
- 
