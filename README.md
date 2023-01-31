@@ -1,8 +1,8 @@
 # Predicting EvapoTranspiration Index using time-series ML algorithms
 
+Droughts have become a major problem in every part of the world, including in my home state of California. This is reducing crop yields, raising prices for critical food supplies, and impacting global food security. 
 
-A minimal example of a [Streamlit](https://www.streamlit.io/) application running as a CML or CDSW Application.
-We display and chart a small dataset with Seaborn.
+Evapotranspiration is the combination of evaporation from the soil and transpiration from plants. When farmers can assess the evapotranspiration, they can estimate how much water is being lost to the atmosphere, and plan irrigation accordingly. Reference evapotranspiration, or ET, is combined with crop specific coefficients to assess the ET for each plant. I use historical ET values to forecast future ET values, which can help farmers and farming authorities better manage our water resources.
 
 ## Repository Structure
 
@@ -23,9 +23,9 @@ We display and chart a small dataset with Seaborn.
 
 ```
 
-## Launching the project on CML
+## Creating the project on CML
 
-We recommend manual setup:
+I recommend manual setup:
 
 1. In a CML workspace, click "New Project" and add a Project Name. Select "Git" as the Initial Setup option, copy in the repo URL `https://github.com/danikagupta/predictET`, and click "Create Project". 
 2. Launch a Python 3 Workbench Session with 4GiB RAM and run `!pip3 install -r requirements.txt` to install requirements. You may need to run this step twice to complete the installation after initial failure.
